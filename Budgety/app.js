@@ -1,31 +1,47 @@
 var values = [];
 
-var readValues = function () {
+var valuesBudget = {
+    totExpenses :"0",
+    totIncome :"0",
+    totBudget :"0"
+}
+var readExpensesIncomes = function () {
     var _value = {
         id: "",
+        percent : "",
         selecctor: document.querySelector(".add__type").value,
         description: document.querySelector(".add__description").value,
         value: document.querySelector(".add__value").value
     };
     return _value;
 };
-var writeValues = (function () {
+
+var writeBudget = (function(budget){
+    document.querySelector(".budget__income--value").innerHTML = budget.totIncome;
+    document.querySelector(".budget__expenses--value").innerHTML = budget.totExpenses;
+    document.querySelector(".budget__value").innerHTML = budget.totBudget;
+    var percent = budget.totIncome != 0?parseInt(100 * budget.totExpenses/budget.totIncome):"";
+    document.querySelector(".budget__expenses--percentage").innerHTML = percent + "\%";
+
+});
+var writeValues = (function (values,budget) {
+    writeBudget(budget);
+    
+
     document.querySelector(".income__list").innerHTML = "";
     document.querySelector(".expenses__list").innerHTML = "";
     for (var i = 0; i < values.length; i++) {
         writeValue(values[i]);
+        console.log(values[i]);
     }
 });
-var writeValue = (function (_value) {
-    var id = values.length;
-    var selecctor = _value.selecctor;
-    var description = _value.description;
-    var value = _value.value;
-    if (selecctor == "inc") {
-        document.querySelector(".income__list").insertAdjacentHTML("beforeend", stringHtml(id, selecctor, description, value));
+var writeValue = (function (value) {
+    
+    if (value.selecctor == "inc") {
+        document.querySelector(".income__list").insertAdjacentHTML("beforeend", stringHtml(value.id, value.selecctor, value.description, value.value));
         return;
     }
-    document.querySelector(".expenses__list").insertAdjacentHTML("beforeend", stringHtml(id, selecctor, description, value));
+    document.querySelector(".expenses__list").insertAdjacentHTML("beforeend", stringHtml(value.id, value.selecctor, value.description, value.value));
 });
 var stringHtml = function (id, selecctor, description, value) {
     return '<div class="item clearfix" id="income-' + id + '">' +
@@ -39,27 +55,31 @@ var stringHtml = function (id, selecctor, description, value) {
         '</div>';
 };
 
+var updateBudget = (function(budget,upIncome,upExpenses){
+    budget.totIncome = upIncome;
+    budget.totExpenses = upExpenses;
+    budget.totBudget = upIncome - upExpenses;
+});
 
-var calcValueIncome = (function () {
+var calcValues = (function (values,budget) {
     var tempBdgIncome = 0;
     var tempBdgExpenses = 0;
     
     for (var data of values) {
-        data.selecctor == "inc" ? tempBdgIncome += parseInt(data.value) : tempBdgExpenses += parseInt(data.value);
+        data.selecctor == "inc" ? tempBdgIncome += parseInt(data.value) : tempBdgExpenses += parseInt(data.value);        
     }
-    document.querySelector(".budget__income--value").innerHTML = tempBdgIncome;
-    document.querySelector(".budget__expenses--value").innerHTML = tempBdgExpenses;
-    console.log(tempBdgIncome);
-    console.log(tempBdgExpenses);
+    //update budget values 
+    updateBudget(budget,tempBdgIncome,tempBdgExpenses);
+    //update percents
 
-
-
-
+    
 });
 var btn = document.querySelector(".add__btn").addEventListener("click", function () {
-    values.push(readValues());
-    calcValueIncome();
-    writeValues();
+    values.push(readExpensesIncomes());  
+
+    calcValues(values,valuesBudget);
+    console.log(valuesBudget);
+    writeValues(values,valuesBudget);
 });
 
 
