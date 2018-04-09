@@ -84,8 +84,6 @@ var updatePercentExpenses = (function(refTotal){
     }
 });
 
-
-
 var calcValues = (function (values,budget) {
     var tempBdgIncome = 0;
     var tempBdgExpenses = 0;    
