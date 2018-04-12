@@ -2,12 +2,36 @@ class Moviment {
     constructor(_sign, _description, _value) {
         this.id;
         this.sign = _sign;
-        this.descrition = _description;
+        this.description = _description;
         this.value = _value;
         if (this.sign === "exp") {
             this.Percent = "---";
         }
     }
+}
+
+
+class Com{
+    constructor(){}
+
+    static _Post(_MovimentType){
+        console.log("_POTS");
+        let _value;
+
+        console.log(_MovimentType);        
+        
+        $.ajax({
+            url: "http://localhost:54614/api/Budget",
+            method : "POST",
+            contentType: "application/json",
+            datatype:"jsonp",
+            data: JSON.stringify(_value) ,
+        }).done((result)=>{
+            console.log(result);
+        }); 
+        
+    }
+
 }
 
 
@@ -22,7 +46,7 @@ class Math {
     }   
 
     static calcPercenValues(ReferenceValue, ReferenceTotal) {
-        return `${parseInt(100 * (ReferenceValue / ReferenceTotal))}%`;
+        return parseInt(100 * (ReferenceValue / ReferenceTotal));
     }
 }
 
@@ -38,14 +62,17 @@ class ModelController {
         _Moviment.id = this.id++;
         if (_Moviment.sign == "inc") {
             this.IncomeList.push(_Moviment);
-            return;
         }
-        this.ExpensesList.push(_Moviment);
+        else{
+            this.ExpensesList.push(_Moviment);
+        }
+        return _Moviment;
     }
     updatePercents() {        
         for (let i = 0; i < this.ExpensesList.length; i++) {            
             this.ExpensesList[i].Percent = Math.calcPercenValues(this.ExpensesList[i].value, this.IncomeTotal)
         }        
+    
     }    
 
     updateValues() {
@@ -71,9 +98,9 @@ class ViewController {
         this.Value = "." + srcValue;
     }
     getInput() {
-        let _type = document.querySelector(this.Type).value;
-        let _description = document.querySelector(this.Descrition).value;
-        let _value = document.querySelector(this.Value).value;
+        let _type = $(this.Type).val();
+        let _description = $(this.Descrition).val();
+        let _value = $(this.Value).val();
         return new Moviment(_type, _description, _value);
     }
 
@@ -105,36 +132,36 @@ class ViewController {
     }
     showIncomes(_IncomesList) {
         for (let Inc of _IncomesList) {
-            document.querySelector(".income__list").insertAdjacentHTML("beforeend", this.showData(Inc));
+            $(".income__list").append(this.showData(Inc));
         }
     }
     showExpenses(_ExpensesList) {
         for (let Exp of _ExpensesList) {
-            document.querySelector(".expenses__list").insertAdjacentHTML("beforeend", this.showData(Exp));
+            $(".expenses__list").append(this.showData(Exp));
         }
     }    
     showTotalPercent(_Moviment){
         let totalPercet = 0;
         if(_Moviment.IncomeTotal > 0){            
             totalPercet = Math.calcPercenValues(_Moviment.ExpenseTotal,_Moviment.IncomeTotal);
-            document.querySelector(".budget__expenses--percentage").innerHTML = `${totalPercet}%`;
+            $(".budget__expenses--percentage").text( `${totalPercet}%`);
             return;
         }
         
         console.log(totalPercet);
-        document.querySelector(".budget__expenses--percentage").innerHTML = "---";
+        $(".budget__expenses--percentage").text("---");
     }
 
     clearScreen(){
-        document.querySelector(".income__list").innerHTML = "";
-        document.querySelector(".expenses__list").innerHTML = "";
-        document.querySelector(".budget__expenses--percentage").innerHTML = "---";
-        document.querySelector(".budget__value").innerHTML = "0";
+        $(".income__list").text("");
+        $(".expenses__list").text("");
+        $(".budget__expenses--percentage").text("---");
+        $(".budget__value").text("0");
         
     }
     showTotals(_Moviment){
-        document.querySelector(".budget__income--value").innerHTML = `+ ${_Moviment.IncomeTotal}`;
-        document.querySelector(".budget__expenses--value").innerHTML = `- ${_Moviment.ExpenseTotal}`;
+        $(".budget__income--value").text(`+ ${_Moviment.IncomeTotal}`);
+        $(".budget__expenses--value").text(`- ${_Moviment.ExpenseTotal}`);
         
         
         let percent = Math.calcPercenValues(_Moviment.ExpenseTotal,_Moviment.IncomeTotal);
@@ -143,12 +170,12 @@ class ViewController {
 
         let resBudgety = _Moviment.IncomeTotal - _Moviment.ExpenseTotal;        
         if(resBudgety > 0){
-            document.querySelector(".budget__value").innerHTML = `+ ${resBudgety}`;
+            $(".budget__value").text(`+ ${resBudgety}`) ;
             return;
         }
         if(resBudgety < 0){
-            document.querySelector(".budget__value").innerHTML = `- ${resBudgety}`;
-        }                        
+            $(".budget__value").text(`- ${resBudgety}`);
+        }                      
         
     }
 
@@ -168,13 +195,26 @@ class BudgetyController {
     }
     addMove() {
         let data = this.View.getInput();
-        this.Model.addItem(data);
+        let temp = this.Model.addItem(data);
+
+        this.Post(temp);
+        console.log("controller");
+        Com._Post(data);
+        console.log(temp);
         this.Model.updateValues();
     }
 
     updateScreen() {
         let Moviment = Model.getMovimentData();        
         View.showAllMoviments(Moviment);
+    }
+    
+    getData(){
+        console.log("not implemented");
+    }
+    
+    Post(_MovimentType){
+        Com._Post(_MovimentType);
     }
 }
 
@@ -184,15 +224,17 @@ let BdgController = new BudgetyController(View, Model);
 
 BdgController.updateScreen();
 
-var btn = document.querySelector(".add__btn").addEventListener("click", () => {
+var btn = $(".add__btn").on("click", () => {
+    BdgController.Post();
     BdgController.addMove();
     BdgController.updateScreen();
 });
 
-var enter = document.addEventListener("keypress", (event) => {
+var enter = $(document).keypress((event) => {
     if (event.key === 13 || event.which === 13) {
         BdgController.addMove();
         BdgController.updateScreen();
+        event.preventDefault();
     }
 });
 
