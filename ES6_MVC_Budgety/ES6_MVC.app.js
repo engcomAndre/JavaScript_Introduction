@@ -11,27 +11,40 @@ class Moviment {
 }
 
 
-class Com{
-    constructor(){}
-
-    static _Post(_MovimentType){
-        console.log("_POTS");
-        let _value;
-
-        console.log(_MovimentType);        
+class Comunication{    
         
+    static _Post(_Moviment){
         $.ajax({
-            url: "http://localhost:54614/api/Budget",
-            method : "POST",
+            url:"http://localhost:61161/api/Budget",
+            method :"POST",
             contentType: "application/json",
             datatype:"jsonp",
-            data: JSON.stringify(_value) ,
+            data: JSON.stringify({"type": _Moviment.sign,"description": _Moviment.description,"value":_Moviment.value}) ,
         }).done((result)=>{
-            console.log(result);
-        }); 
-        
+            let res = {
+                log : "inPost",
+                res : result,
+                data : _Moviment
+            }
+            console.log(res);
+        });        
     }
 
+    static _Get(){
+        let data = $.ajax({
+            url: "http://localhost:61161/api/Budget",
+            method :"GET",              
+        }).done((result)=>{                        
+            let res = {
+                log : "inGet",
+                data : result,                
+            }            
+            
+            return res;
+        });
+        console.log(data);        
+        return data;
+    }
 }
 
 
@@ -196,11 +209,7 @@ class BudgetyController {
     addMove() {
         let data = this.View.getInput();
         let temp = this.Model.addItem(data);
-
-        this.Post(temp);
-        console.log("controller");
-        Com._Post(data);
-        console.log(temp);
+        this.Post(temp);                        
         this.Model.updateValues();
     }
 
@@ -209,12 +218,17 @@ class BudgetyController {
         View.showAllMoviments(Moviment);
     }
     
-    getData(){
-        console.log("not implemented");
+    Get(){  
+        let res = {
+            log : "InControllerGet",
+            data : Comunication._Get()
+        }
+        console.log(res);
+            
     }
     
     Post(_MovimentType){
-        Com._Post(_MovimentType);
+        Comunication._Post(_MovimentType);
     }
 }
 
@@ -224,10 +238,9 @@ let BdgController = new BudgetyController(View, Model);
 
 BdgController.updateScreen();
 
-var btn = $(".add__btn").on("click", () => {
-    BdgController.Post();
-    BdgController.addMove();
-    BdgController.updateScreen();
+var btn = $(".add__btn").on("click", () => {    
+    BdgController.Get()    
+    
 });
 
 var enter = $(document).keypress((event) => {
